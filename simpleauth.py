@@ -13,7 +13,6 @@ simpleauth = tornado.web.Application([
 
 if __name__ == '__main__':
 	conf.init()
-
 	parser = argparse.ArgumentParser
 
 	parser.add_argument(
