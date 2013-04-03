@@ -1,14 +1,17 @@
-from conf import db_conn, settings
+from conf import    \
+	db_conn,        \
+	hash_schemes,   \
+	default_scheme, \
+	default_hasher, \
+	auth_token_duration
 
-import passlib.hash
 from passlib.utils import generate_password
 
-schemes = {
-	'sha256_crypt': passlib.hash.sha256_crypt
-}
+from collections import namedtuple
+
 
 def token_expire_time():
-	if settings.TOKEN_DURATION is None:
+	if auth_token_duration is None:
 		return None
 	else:
 		#TODO
@@ -55,15 +58,35 @@ def create_db():
 		);
 	""")
 
-	crypt = schemes[settings.HASH_SCHEME]
-
 	cursor = db_conn.execute("""
 		INSERT INTO Users
 			(username, email, hash_scheme, passhash)
 		VALUES
 			(?, ?, ?, ?)
-		""", ('root', 'root@example.com', settings.HASH_SCHEME, crypt.encrypt(generate_password(20)))
+		""", ('root', 'root@example.com', default_scheme, default_hasher(generate_password(20)))
 	)
 	db_conn.commit()
 	
 	print('Root Token:', create_token(cursor.lastrowid))
+
+def get_user(token):
+	User = namedtuple('User', ['user_id', 'username'])
+
+	cursor = db_conn.execute("""
+		SELECT
+			user_id,
+			username
+		FROM
+			Sessions s
+		JOIN 
+			Users u ON s.user_id = u.id 
+		WHERE
+			s.token = ?
+	""", (token,))
+
+	r = cursor.fetchone()
+
+	if not r:
+		return None
+
+	return User(*r)
