@@ -31,7 +31,7 @@ if __name__ == '__main__':
 		action='store_const',
 		const=True, 
 		default=False,
-		help='listen on the specified port'
+		help='create a new database'
 	)
 
 	parser.add_argument(
@@ -40,16 +40,16 @@ if __name__ == '__main__':
 		metavar='db',
 		type=str,
 		default='users.sqlite',
-		help='listen on the specified port'
+		help='the sqlite db file to use'
 	)
 
 	args = parser.parse_args()
 
-	conf.DB_NAME = args.db
+	conf.DB_NAME = args.database
 	conf.init()
 
 	if args.create:
-		print('Creating new db "{db}"'.format(db=args.db))
+		print('Creating new db "{db}"'.format(db=args.database))
 		utils.create_db()
 	else:
 		simpleauth.listen(args.port)
