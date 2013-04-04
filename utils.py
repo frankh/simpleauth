@@ -1,17 +1,11 @@
-from conf import    \
-	db_conn,        \
-	hash_schemes,   \
-	default_scheme, \
-	default_hasher, \
-	auth_token_duration
+import conf
 
 from passlib.utils import generate_password
-
 from collections import namedtuple
 
 
 def token_expire_time():
-	if auth_token_duration is None:
+	if conf.AUTH_TOKEN_DURATION is None:
 		return None
 	else:
 		#TODO
@@ -23,19 +17,19 @@ def create_token(user_id, expires=None):
 
 	token = generate_password(20)
 
-	db_conn.execute("""
+	conf.DB_CONN.execute("""
 		INSERT INTO Sessions
 			(token, user_id, expires)
 		VALUES
 			(?, ?, ?)
 		""", (token, user_id, expires)
 	)
-	db_conn.commit()
+	conf.DB_CONN.commit()
 
 	return token
 
 def create_db():
-	db_conn.execute("""
+	conf.DB_CONN.execute("""
 		CREATE TABLE Users
 		(
 			id          INTEGER PRIMARY KEY,
@@ -48,7 +42,7 @@ def create_db():
 		);
 	""")
 
-	db_conn.execute("""
+	conf.DB_CONN.execute("""
 		CREATE TABLE Sessions
 		(
 			token       TEXT PRIMARY KEY,
@@ -58,21 +52,22 @@ def create_db():
 		);
 	""")
 
-	cursor = db_conn.execute("""
+	cursor = conf.DB_CONN.execute("""
 		INSERT INTO Users
 			(username, email, hash_scheme, passhash)
 		VALUES
 			(?, ?, ?, ?)
-		""", ('root', 'root@example.com', default_scheme, default_hasher(generate_password(20)))
+		""", ('root', 'root@example.com', conf.DEFAULT_SCHEME, 'NOPASS') 
+		# Cannot login as root as it's passhash will never match a hash
 	)
-	db_conn.commit()
+	conf.DB_CONN.commit()
 	
 	print('Root Token:', create_token(cursor.lastrowid))
 
 def get_user(token):
 	User = namedtuple('User', ['user_id', 'username'])
 
-	cursor = db_conn.execute("""
+	cursor = conf.DB_CONN.execute("""
 		SELECT
 			user_id,
 			username
