@@ -54,5 +54,6 @@ if __name__ == '__main__':
 	else:
 		simpleauth.listen(args.port)
 		print('Listening on port {port}'.format(port=args.port))
+		print('Using user db "{db}"'.format(db=args.database))
 		iol = tornado.ioloop.IOLoop.instance()
 		iol.start()
