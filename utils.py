@@ -15,7 +15,7 @@ def create_token(user_id, expires=None):
 	if expires is None:
 		expires = token_expire_time()
 
-	token = generate_password(20)
+	token = generate_password(conf.AUTH_TOKEN_LENGTH)
 
 	conf.DB_CONN.execute("""
 		INSERT INTO Sessions

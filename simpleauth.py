@@ -37,7 +37,7 @@ if __name__ == '__main__':
 	parser.add_argument(
 		'-d', 
 		'--database', 
-		metavar='db',
+		metavar='db_path',
 		type=str,
 		default='users.sqlite',
 		help='the sqlite db file to use'
