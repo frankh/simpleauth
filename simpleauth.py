@@ -38,7 +38,6 @@ if __name__ == '__main__':
 		'-d', 
 		'--database', 
 		metavar='db',
-		action='store_const',
 		type=str,
 		default='users.sqlite',
 		help='listen on the specified port'
