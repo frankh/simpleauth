@@ -1,10 +1,6 @@
 import tornado.web
 
-from conf import    \
-	db_conn,        \
-	hash_schemes,   \
-	default_scheme, \
-	default_hasher
+import conf
 
 from utils import \
 	get_user,     \
@@ -24,14 +20,14 @@ class Create(tornado.web.RequestHandler):
 			self.set_status(401)
 			return
 
-		cursor = db_conn.execute("""
+		cursor = conf.DB_CONN.execute("""
 			INSERT INTO Users
 				(username, email, hash_scheme, passhash)
 			VALUES
 				(?, ?, ?, ?)
-			""", (username, email, default_scheme, default_hasher(password))
+			""", (username, email, conf.DEFAULT_SCHEME, conf.DEFAULT_HASHER(password))
 		)
-		db_conn.commit()
+		conf.DB_CONN.commit()
 
 		# TODO potential race condition if tornado is multithreaded
 		token = create_token(cursor.lastrowid)
@@ -39,13 +35,12 @@ class Create(tornado.web.RequestHandler):
 
 class Login(tornado.web.RequestHandler):
 	SUPPORTED_METHODS = ('POST')
-	DEFAULT_HASH = default_hasher('')
 
 	def post(self):
 		username = self.get_argument("username", default=None, strip=False)
 		password = self.get_argument("password", default=None, strip=False)
 
-		cursor = db_conn.execute("""
+		cursor = conf.DB_CONN.execute("""
 			SELECT 
 				id,
 				hash_scheme, 
@@ -59,11 +54,11 @@ class Login(tornado.web.RequestHandler):
 		r = cursor.fetchone()
 		if not r:
 			# To simplify code path
-			user_id, hash_scheme, passhash = (0, default_scheme, self.DEFAULT_HASH)
+			user_id, hash_scheme, passhash = (0, conf.DEFAULT_SCHEME, '')
 		else:
 			user_id, hash_scheme, passhash = r
 
-		if hash_schemes[hash_scheme].verify(password, passhash):
+		if conf.HASH_SCHEMES[hash_scheme].verify(password, passhash):
 			token = create_token(user_id)
 			self.write(token)
 		else:
