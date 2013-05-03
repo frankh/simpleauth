@@ -3,6 +3,38 @@ import conf
 from passlib.utils import generate_password
 from collections import namedtuple
 
+import string
+import math
+
+
+def estimate_entropy(password):
+	alphabet_size = 0
+	pwd_letters = set(password)
+
+	for alph in estimate_entropy.alphabets:
+		if alph & pwd_letters:
+			alphabet_size += len(alph)
+			pwd_letters -= alph
+
+	alphabet_size += len(pwd_letters)
+
+	if( alphabet_size == 0 ):
+		return 0
+
+	# from http://blog.shay.co/password-entropy/
+	entropy = len(password) * math.log(alphabet_size, 2)
+
+	return entropy
+
+estimate_entropy.alphabets = [
+	set(string.ascii_lowercase),
+	set(string.ascii_uppercase),
+	set(string.digits),
+	set(string.punctuation),
+]
+
+import pdb
+pdb.set_trace()
 
 def token_expire_time():
 	if conf.AUTH_TOKEN_DURATION is None:
