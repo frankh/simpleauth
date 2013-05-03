@@ -33,9 +33,6 @@ estimate_entropy.alphabets = [
 	set(string.punctuation),
 ]
 
-import pdb
-pdb.set_trace()
-
 def token_expire_time():
 	if conf.AUTH_TOKEN_DURATION is None:
 		return None
